@@ -1,0 +1,45 @@
+# render.yaml — Configuración de deploy en Render.com
+# Sube este archivo junto con tu código a GitHub.
+# Render detecta este archivo y configura el servicio automáticamente.
+
+services:
+  - type: web
+    name: closetai-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+
+    # Variables de entorno (las rellenas en el panel de Render)
+    envVars:
+      - key: DATABASE_URL
+        sync: false        # sync: false → debes introducirlo manualmente en Render
+
+      - key: SUPABASE_URL
+        sync: false
+
+      - key: SUPABASE_KEY
+        sync: false
+
+      - key: SUPABASE_JWT_SECRET
+        sync: false
+
+      - key: SUPABASE_STORAGE_BUCKET
+        value: garment-images
+
+      - key: GROQ_API_KEY
+        sync: false
+
+      - key: GROQ_MODEL
+        value: llama3-70b-8192
+
+      - key: OPENWEATHER_API_KEY
+        sync: false
+
+      - key: APP_ENV
+        value: production
+
+    # Health check para que Render sepa que el servidor está listo
+    healthCheckPath: /health
+
+    # Plan gratuito de Render
+    plan: free
