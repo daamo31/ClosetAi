@@ -16,11 +16,11 @@ import 'screens/capture_screen.dart';
 // (Settings → API → Project URL y anon/public key)
 const _supabaseUrl = String.fromEnvironment(
   'SUPABASE_URL',
-  defaultValue: 'https://TU_PROJECT_ID.supabase.co',   // ← cambia esto
+  defaultValue: 'https://gghtemrnbxudtbwllvtt.supabase.co',
 );
 const _supabaseAnonKey = String.fromEnvironment(
   'SUPABASE_ANON_KEY',
-  defaultValue: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',  // ← cambia esto
+  defaultValue: 'sb_publishable_6iiKbA1HsX0BrtaRDWT-2Q_OHy2Vg4f',
 );
 
 Future<void> main() async {
