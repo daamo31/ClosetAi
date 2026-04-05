@@ -31,8 +31,8 @@ class _CaptureScreenState extends State<CaptureScreen> {
   final _priceCtrl = TextEditingController();
 
   String _category = 'top';
-  String _season   = 'all';
-  String _occasion = 'casual';
+  List<String> _seasonsSelected = ['all'];
+  List<String> _occasionsSelected = ['casual'];
   bool   _loading  = false;
 
   // Opciones de select
@@ -105,8 +105,8 @@ class _CaptureScreenState extends State<CaptureScreen> {
         name:          _nameCtrl.text.trim(),
         category:      _category,
         color:         _colorCtrl.text.trim(),
-        season:        _season,
-        occasion:      _occasion,
+        season:        _seasonsSelected.join(','),
+        occasion:      _occasionsSelected.join(','),
         purchasePrice: double.tryParse(_priceCtrl.text) ?? 0.0,
       );
 
@@ -137,8 +137,8 @@ class _CaptureScreenState extends State<CaptureScreen> {
     _colorCtrl.clear();
     _priceCtrl.clear();
     _category = 'top';
-    _season   = 'all';
-    _occasion = 'casual';
+    _seasonsSelected = ['all'];
+    _occasionsSelected = ['casual'];
   }
 
   @override
@@ -215,7 +215,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
               ).animate().fadeIn(delay: 200.ms),
 
               const SizedBox(height: 20),
-              _buildDropdownSection(),
+              _buildMultiSelectSection(),
 
               const SizedBox(height: 32),
 
@@ -352,7 +352,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
   }
 
   // ── Dropdowns ──────────────────────────────────────────────────────────────
-  Widget _buildDropdownSection() {
+  Widget _buildMultiSelectSection() {
     return Column(
       children: [
         _buildDropdown<String>(
@@ -362,21 +362,62 @@ class _CaptureScreenState extends State<CaptureScreen> {
           onChanged: (v) => setState(() => _category = v!),
         ),
         const SizedBox(height: 14),
-        _buildDropdown<String>(
-          label: 'Temporada',
-          value: _season,
-          items: _seasons,
-          onChanged: (v) => setState(() => _season = v!),
+        _buildMultiSelectChips(
+          label: 'Temporadas',
+          options: _seasons,
+          selected: _seasonsSelected,
+          onChanged: (v) => setState(() => _seasonsSelected = v),
         ),
         const SizedBox(height: 14),
-        _buildDropdown<String>(
-          label: 'Ocasión principal',
-          value: _occasion,
-          items: _occasions,
-          onChanged: (v) => setState(() => _occasion = v!),
+        _buildMultiSelectChips(
+          label: 'Ocasiones',
+          options: _occasions,
+          selected: _occasionsSelected,
+          onChanged: (v) => setState(() => _occasionsSelected = v),
         ),
       ],
     ).animate().fadeIn(delay: 300.ms);
+  }
+
+  Widget _buildMultiSelectChips({
+    required String label,
+    required List<(String, String)> options,
+    required List<String> selected,
+    required ValueChanged<List<String>> onChanged,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildLabel(label),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          children: options.map((item) {
+            final isSelected = selected.contains(item.$1);
+            return FilterChip(
+              label: Text(item.$2),
+              selected: isSelected,
+              onSelected: (val) {
+                final newSelected = List<String>.from(selected);
+                if (val) {
+                  newSelected.add(item.$1);
+                } else {
+                  newSelected.remove(item.$1);
+                }
+                onChanged(newSelected);
+              },
+              selectedColor: AppTheme.primary.withOpacity(0.2),
+              checkmarkColor: AppTheme.primary,
+              backgroundColor: AppTheme.bgSurface,
+              labelStyle: TextStyle(
+                color: isSelected ? AppTheme.primary : AppTheme.textMuted,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
   }
 
   Widget _buildDropdown<T>({

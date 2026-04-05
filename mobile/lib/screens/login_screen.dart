@@ -36,30 +36,41 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       final supabase = Supabase.instance.client;
-
       if (_isLogin) {
         await supabase.auth.signInWithPassword(
           email:    _emailCtrl.text.trim(),
           password: _passwordCtrl.text,
         );
       } else {
-        await supabase.auth.signUp(
+        final res = await supabase.auth.signUp(
           email:    _emailCtrl.text.trim(),
           password: _passwordCtrl.text,
         );
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('✅ Cuenta creada. Revisa tu email para confirmar.'),
-            ),
+        if (res.user != null && res.user!.emailConfirmedAt != null) {
+          // Si el email ya está confirmado, iniciar sesión automáticamente
+          await supabase.auth.signInWithPassword(
+            email:    _emailCtrl.text.trim(),
+            password: _passwordCtrl.text,
           );
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('✅ Cuenta creada. Revisa tu email para confirmar.'),
+              ),
+            );
+          }
         }
       }
     } on AuthException catch (e) {
       if (mounted) {
+        String msg = e.message;
+        if (msg.contains('confirmation')) {
+          msg = 'Debes confirmar tu email antes de iniciar sesión.';
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.message),
+            content: Text(msg),
             backgroundColor: AppTheme.error,
           ),
         );

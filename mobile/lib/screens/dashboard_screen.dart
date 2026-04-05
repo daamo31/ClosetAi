@@ -10,6 +10,7 @@ import '../models/outfit.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/outfit_card.dart';
+import 'weather_forecast_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -19,6 +20,21 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+    Map<String, dynamic>? _weather;
+
+    @override
+    void initState() {
+      super.initState();
+      _loadPrefs();
+      _fetchWeather();
+    }
+
+    Future<void> _fetchWeather() async {
+      final data = await WeatherService.getCurrentWeather(_city);
+      if (mounted && data != null) {
+        setState(() => _weather = data);
+      }
+    }
   Outfit? _outfit;
   bool    _loading    = false;
   bool    _confirming = false;
@@ -176,7 +192,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
       child: Column(
         children: [
-          // Ciudad
+          // Ciudad y clima
           Row(
             children: [
               const Icon(Icons.location_on_outlined, color: AppTheme.textMuted, size: 16),
@@ -194,6 +210,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ),
               ),
+              if (_weather != null)
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => WeatherForecastScreen(city: _city),
+                      ),
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      if (_weather!['weather'] != null && _weather!['weather'][0]['icon'] != null)
+                        Image.network(
+                          WeatherService.getWeatherIcon(_weather!['weather'][0]['icon']),
+                          width: 28, height: 28,
+                        ),
+                      const SizedBox(width: 4),
+                      if (_weather!['main'] != null && _weather!['main']['temp'] != null)
+                        Text(
+                          '${_weather!['main']['temp'].round()}°C',
+                          style: const TextStyle(
+                            color: AppTheme.textPrimary,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
               const SizedBox(width: 12),
               const Icon(Icons.edit_outlined, color: AppTheme.textMuted, size: 14),
             ],
