@@ -406,7 +406,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
                 }
                 onChanged(newSelected);
               },
-              selectedColor: AppTheme.primary.withOpacity(0.2),
+              selectedColor: AppTheme.primary.withValues(alpha: 0.2),
               checkmarkColor: AppTheme.primary,
               backgroundColor: AppTheme.bgSurface,
               labelStyle: TextStyle(

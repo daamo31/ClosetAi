@@ -10,6 +10,7 @@ import '../models/outfit.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/outfit_card.dart';
+import '../services/weather_service.dart';
 import 'weather_forecast_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -22,12 +23,12 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
     Map<String, dynamic>? _weather;
 
-    @override
-    void initState() {
-      super.initState();
-      _loadPrefs();
-      _fetchWeather();
-    }
+  @override
+  void initState() {
+    super.initState();
+    _loadPrefs();
+    _fetchWeather();
+  }
 
     Future<void> _fetchWeather() async {
       final data = await WeatherService.getCurrentWeather(_city);
@@ -52,11 +53,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     ('dinner',  '🍷 Cena'),
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    _loadPrefs();
-  }
 
   Future<void> _loadPrefs() async {
     final prefs = await SharedPreferences.getInstance();
