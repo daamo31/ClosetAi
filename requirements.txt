@@ -1,0 +1,37 @@
+# ═══════════════════════════════════════════════════════════════
+#   ClosetAI Backend — Dependencias Python
+# ═══════════════════════════════════════════════════════════════
+
+# ── API Framework ─────────────────────────────────────────────
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+python-multipart==0.0.20     # necesario para recibir formularios / archivos
+
+# ── Base de Datos ─────────────────────────────────────────────
+sqlalchemy[asyncio]==2.0.36
+asyncpg==0.30.0              # driver async para PostgreSQL
+alembic==1.14.0              # migraciones (para el futuro)
+
+# ── Validación ────────────────────────────────────────────────
+pydantic==2.10.3
+pydantic-settings==2.6.1     # carga settings desde .env
+
+# ── HTTP Client ───────────────────────────────────────────────
+httpx==0.28.1                # para llamadas a OpenWeatherMap
+
+# ── Auth / JWT ────────────────────────────────────────────────
+python-jose[cryptography]==3.3.0   # verificar JWT de Supabase
+
+# ── Supabase ──────────────────────────────────────────────────
+supabase==2.10.0             # cliente oficial (Storage + Admin)
+
+# ── IA / LLM ──────────────────────────────────────────────────
+groq==0.13.0                 # cliente oficial Groq API
+
+# ── Procesamiento de imágenes ─────────────────────────────────
+rembg==2.0.57                # eliminación de fondo (modelo U2Net ~170MB)
+Pillow==11.1.0               # manipulación de imágenes (crop, conversión)
+onnxruntime==1.20.1          # runtime del modelo de rembg
+
+# ── Utils ─────────────────────────────────────────────────────
+python-dotenv==1.0.1
