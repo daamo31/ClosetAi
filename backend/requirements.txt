@@ -1,5 +1,5 @@
 # ═══════════════════════════════════════════════════════════════
-#   ClosetAI Backend — Dependencias Python
+#   ClosetAI Backend — Dependencias Python (compatibles Python 3.14)
 # ═══════════════════════════════════════════════════════════════
 
 # ── API Framework ─────────────────────────────────────────────
@@ -31,7 +31,7 @@ groq==0.13.0                 # cliente oficial Groq API
 # ── Procesamiento de imágenes ─────────────────────────────────
 rembg==2.0.74                # eliminación de fondo (modelo U2Net ~170MB, compatible Python 3.14)
 Pillow==11.1.0               # manipulación de imágenes (crop, conversión)
-onnxruntime==1.20.1          # runtime del modelo de rembg
+onnxruntime==1.24.4          # runtime del modelo de rembg (compatible Python 3.14)
 
 # ── Utils ─────────────────────────────────────────────────────
 python-dotenv==1.0.1
