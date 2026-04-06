@@ -4,6 +4,7 @@ Conecta a Supabase PostgreSQL usando SQLAlchemy 2.0 + asyncpg
 """
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
+from urllib.parse import urlsplit, urlunsplit, parse_qsl, urlencode
 from app.config import settings
 
 
@@ -14,6 +15,13 @@ if _db_url.startswith("postgresql://"):
     _db_url = _db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
 elif _db_url.startswith("postgres://"):
     _db_url = _db_url.replace("postgres://", "postgresql+asyncpg://", 1)
+
+# Algunas cadenas de Supabase incluyen params de psycopg (ej. prepared_statements)
+# que asyncpg no soporta y provocan: TypeError unexpected keyword argument.
+parts = urlsplit(_db_url)
+if parts.query:
+    query_pairs = [(k, v) for k, v in parse_qsl(parts.query, keep_blank_values=True) if k != "prepared_statements"]
+    _db_url = urlunsplit((parts.scheme, parts.netloc, parts.path, urlencode(query_pairs), parts.fragment))
 
 
 # ── Motor async ───────────────────────────────────────────────────────────────
