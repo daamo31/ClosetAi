@@ -10,7 +10,7 @@ class ApiConfig {
   // En producción:     reemplaza con tu URL de Render.com
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://closetai-backend.onrender.com', // ← cambia esto en Render
+    defaultValue: 'https://closetai-revc.onrender.com', // ← cambia esto en Render
   );
 
   // ── Endpoints ──────────────────────────────────────────────────────────────
