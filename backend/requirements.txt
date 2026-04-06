@@ -17,7 +17,7 @@ pydantic==2.10.3
 pydantic-settings==2.6.1     # carga settings desde .env
 
 # ── HTTP Client ───────────────────────────────────────────────
-httpx==0.28.1                # para llamadas a OpenWeatherMap
+httpx==0.27.2                # para llamadas a OpenWeatherMap (compatible supabase 2.10)
 
 # ── Auth / JWT ────────────────────────────────────────────────
 python-jose[cryptography]==3.3.0   # verificar JWT de Supabase
