@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 
 from app.database import engine, Base
 from app.routers import garments, outfits, usage
@@ -35,6 +36,14 @@ async def lifespan(app: FastAPI):
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+        # Compatibilidad con despliegues existentes: create_all no agrega columnas
+        # en tablas ya creadas. Añadimos updated_at si no existe.
+        await conn.execute(text("""
+            ALTER TABLE garments
+            ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+        """))
+
         logger.info("✅ Tablas verificadas / creadas en PostgreSQL")
 
     yield  # ← la app está corriendo aquí
