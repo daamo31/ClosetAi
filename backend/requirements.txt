@@ -33,5 +33,8 @@ rembg==2.0.57                # eliminación de fondo (modelo U2Net ~170MB, compa
 Pillow==11.1.0               # manipulación de imágenes (crop, conversión)
 onnxruntime==1.20.1          # runtime del modelo de rembg (compatible Python 3.11)
 
+# ── Servidor ──────────────────────────────────────────────────
+gunicorn==22.0.0             # servidor WSGI/ASGI para producción (Render)
+
 # ── Utils ─────────────────────────────────────────────────────
 python-dotenv==1.0.1
