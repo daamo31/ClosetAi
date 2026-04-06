@@ -18,9 +18,24 @@ elif _db_url.startswith("postgres://"):
 
 # Algunas cadenas de Supabase incluyen params de psycopg (ej. prepared_statements)
 # que asyncpg no soporta y provocan: TypeError unexpected keyword argument.
+_connect_args = {}
 parts = urlsplit(_db_url)
 if parts.query:
-    query_pairs = [(k, v) for k, v in parse_qsl(parts.query, keep_blank_values=True) if k != "prepared_statements"]
+    raw_pairs = parse_qsl(parts.query, keep_blank_values=True)
+
+    # Convertir sslmode (formato psycopg/libpq) a connect_args para asyncpg.
+    sslmode = next((v for k, v in raw_pairs if k == "sslmode"), None)
+    if sslmode:
+        if sslmode in {"require", "verify-ca", "verify-full"}:
+            _connect_args["ssl"] = "require"
+        elif sslmode in {"disable", "allow", "prefer"}:
+            _connect_args["ssl"] = False
+
+    query_pairs = [
+        (k, v)
+        for k, v in raw_pairs
+        if k not in {"prepared_statements", "sslmode"}
+    ]
     _db_url = urlunsplit((parts.scheme, parts.netloc, parts.path, urlencode(query_pairs), parts.fragment))
 
 
@@ -31,6 +46,7 @@ engine = create_async_engine(
     pool_size=5,
     max_overflow=10,
     pool_pre_ping=True,     # verifica conexión antes de usar (importante en Render)
+    connect_args=_connect_args,
 )
 
 # ── Fábrica de sesiones ───────────────────────────────────────────────────────
