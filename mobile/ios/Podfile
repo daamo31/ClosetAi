@@ -47,6 +47,8 @@ post_install do |installer|
 
     # Workaround for some plugin podspecs where PrivacyInfo.xcprivacy is
     # mistakenly added to Compile Sources and breaks arm64 builds.
+    next unless target.respond_to?(:source_build_phase) && target.source_build_phase
+
     target.source_build_phase.files.each do |file|
       path = file.file_ref&.path
       next unless path&.end_with?('PrivacyInfo.xcprivacy')
