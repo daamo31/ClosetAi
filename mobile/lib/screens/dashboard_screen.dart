@@ -31,7 +31,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
     Future<void> _fetchWeather() async {
-      final data = await WeatherService.getCurrentWeather(_city);
+      Map<String, dynamic>? data;
+      if (_usingGps && _lat != null && _lon != null) {
+        data = await WeatherService.getCurrentWeatherByCoords(_lat!, _lon!);
+      } else {
+        data = await WeatherService.getCurrentWeather(_city);
+      }
       if (mounted && data != null) {
         setState(() => _weather = data);
       }
@@ -44,6 +49,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   // Configuración del usuario
   String   _city     = 'Madrid';
   String   _occasion = 'casual';
+  bool     _usingGps = false;
+  double?  _lat;
+  double?  _lon;
 
   final _occasions = [
     ('casual',  '😊 Casual'),
@@ -59,13 +67,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
     setState(() {
       _city     = prefs.getString('city')     ?? 'Madrid';
       _occasion = prefs.getString('occasion') ?? 'casual';
+      _usingGps = prefs.getBool('usingGps')   ?? false;
     });
+    // Intentar geolocalización automática
+    if (_usingGps) {
+      await _detectLocation();
+    }
   }
 
   Future<void> _savePrefs() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('city', _city);
     await prefs.setString('occasion', _occasion);
+    await prefs.setBool('usingGps', _usingGps);
+  }
+
+  Future<void> _detectLocation() async {
+    final position = await WeatherService.getCurrentPosition();
+    if (position != null) {
+      _lat = position.latitude;
+      _lon = position.longitude;
+      final cityName = await WeatherService.getCityFromCoords(_lat!, _lon!);
+      if (cityName != null && mounted) {
+        setState(() {
+          _city = cityName;
+          _usingGps = true;
+        });
+        _savePrefs();
+        _fetchWeather();
+      }
+    }
   }
 
   Future<void> _generateOutfit() async {
@@ -192,6 +223,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Row(
             children: [
               const Icon(Icons.location_on_outlined, color: AppTheme.textMuted, size: 16),
+              if (_usingGps) const Icon(Icons.gps_fixed, color: AppTheme.primary, size: 14),
               const SizedBox(width: 4),
               Expanded(
                 child: GestureDetector(
@@ -444,13 +476,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: AppTheme.bgCard,
         title: const Text('Tu ciudad', style: TextStyle(color: AppTheme.textPrimary)),
-        content: TextField(
-          controller: ctrl,
-          style: const TextStyle(color: AppTheme.textPrimary),
-          decoration: const InputDecoration(
-            hintText: 'Ej: Madrid, Barcelona...',
-          ),
-          textCapitalization: TextCapitalization.words,
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: ctrl,
+              style: const TextStyle(color: AppTheme.textPrimary),
+              decoration: const InputDecoration(
+                hintText: 'Ej: Madrid, Barcelona...',
+              ),
+              textCapitalization: TextCapitalization.words,
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                setState(() => _usingGps = true);
+                await _detectLocation();
+                _fetchWeather();
+              },
+              icon: const Icon(Icons.my_location, size: 18),
+              label: const Text('Usar mi ubicación (GPS)'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppTheme.primary,
+                side: const BorderSide(color: AppTheme.primary),
+              ),
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -459,8 +511,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           ElevatedButton(
             onPressed: () {
-              setState(() => _city = ctrl.text.trim().isNotEmpty ? ctrl.text.trim() : _city);
+              setState(() {
+                _city = ctrl.text.trim().isNotEmpty ? ctrl.text.trim() : _city;
+                _usingGps = false;
+                _lat = null;
+                _lon = null;
+              });
               _savePrefs();
+              _fetchWeather();
               Navigator.pop(ctx);
             },
             child: const Text('Guardar'),

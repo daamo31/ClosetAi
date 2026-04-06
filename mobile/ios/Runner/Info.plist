@@ -36,6 +36,11 @@
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Necesitamos acceso a tu galería para elegir fotos de tu armario.</string>
 
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Necesitamos tu ubicación para mostrarte el clima de tu zona y sugerirte outfits adecuados.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Necesitamos tu ubicación para mostrarte el clima de tu zona y sugerirte outfits adecuados.</string>
+
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

@@ -33,7 +33,9 @@ VALID_OCCASIONS = {"work", "casual", "sport", "formal", "dinner"}
 
 @router.get("/generate", response_model=OutfitResponse)
 async def generate_outfit(
-    city:     str = Query(...,      description="Ciudad para el clima, ej: 'Madrid'"),
+    city:     str = Query(None,     description="Ciudad para el clima, ej: 'Madrid'"),
+    lat:      float = Query(None,   description="Latitud (alternativa a city)"),
+    lon:      float = Query(None,   description="Longitud (alternativa a city)"),
     occasion: str = Query("casual", description="work | casual | sport | formal | dinner"),
     db:      AsyncSession = Depends(get_db),
     user_id: uuid.UUID    = Depends(get_current_user),
@@ -51,8 +53,15 @@ async def generate_outfit(
             detail=f"Ocasión inválida. Usa: {sorted(VALID_OCCASIONS)}",
         )
 
+    # ── Validar ciudad o coordenadas ─────────────────────────────────────
+    if not city and (lat is None or lon is None):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Debes proporcionar una ciudad o coordenadas (lat/lon).",
+        )
+
     # ── 1. Obtener clima ──────────────────────────────────────────────────
-    weather = await get_weather(city)
+    weather = await get_weather(city=city, lat=lat, lon=lon)
 
     # ── 2. Cargar armario del usuario ────────────────────────────────────
     result = await db.execute(

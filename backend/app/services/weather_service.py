@@ -12,22 +12,34 @@ logger = logging.getLogger(__name__)
 OPENWEATHER_BASE_URL = "https://api.openweathermap.org/data/2.5/weather"
 
 
-async def get_weather(city: str) -> dict:
+async def get_weather(city: str = None, lat: float = None, lon: float = None) -> dict:
     """
-    Obtiene el clima actual de una ciudad.
+    Obtiene el clima actual de una ciudad o por coordenadas.
 
     Args:
         city: Nombre de la ciudad (ej: "Madrid", "Barcelona", "Zaragoza")
+        lat: Latitud (alternativa a city)
+        lon: Longitud (alternativa a city)
 
     Returns:
         dict con: city, temp, feels_like, description, humidity, icon
     """
     params = {
-        "q": city,
         "appid": settings.OPENWEATHER_API_KEY,
-        "units": "metric",   # temperatura en °C
-        "lang": "es",        # descripción en español ("cielo despejado", etc.)
+        "units": "metric",
+        "lang": "es",
     }
+
+    if lat is not None and lon is not None:
+        params["lat"] = lat
+        params["lon"] = lon
+    elif city:
+        params["q"] = city
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Debes proporcionar una ciudad o coordenadas (lat/lon).",
+        )
 
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
