@@ -24,14 +24,40 @@ class ApiService {
   ApiService._();
   static final ApiService instance = ApiService._();
 
+  final _supabase = Supabase.instance.client;
+
   // ── Auth ──────────────────────────────────────────────────────────────────
   /// Token JWT actual del usuario autenticado (Supabase Auth)
-  String? get _token => Supabase.instance.client.auth.currentSession?.accessToken;
+  String? get _token => _supabase.auth.currentSession?.accessToken;
 
   Map<String, String> get _headers => {
         'Content-Type': 'application/json',
         if (_token != null) 'Authorization': 'Bearer $_token',
       };
+
+  Future<bool> _refreshSession() async {
+    try {
+      final res = await _supabase.auth.refreshSession();
+      return res.session != null;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<http.Response> _sendWithAuthRetry(
+    Future<http.Response> Function() request,
+  ) async {
+    var response = await request();
+    if (response.statusCode != 401) return response;
+
+    final refreshed = await _refreshSession();
+    if (!refreshed) {
+      throw ApiException('Sesion expirada. Inicia sesion de nuevo.', statusCode: 401);
+    }
+
+    response = await request();
+    return response;
+  }
 
   // ── Manejo de errores ─────────────────────────────────────────────────────
   void _checkResponse(http.Response response) {
@@ -63,33 +89,38 @@ class ApiService {
   }) async {
     if (_token == null) throw ApiException('No has iniciado sesión');
 
-    final request = http.MultipartRequest(
-      'POST',
-      Uri.parse(ApiConfig.uploadGarment),
-    )
-      ..headers['Authorization'] = 'Bearer $_token'
-      ..fields['name']           = name
-      ..fields['category']       = category
-      ..fields['color']          = color
-      ..fields['season']         = season
-      ..fields['occasion']       = occasion
-      ..fields['purchase_price'] = purchasePrice.toString();
-
     // Detectar tipo MIME por extensión
     final ext  = imageFile.path.split('.').last.toLowerCase();
     final mime = ext == 'png' ? 'image/png'
                : ext == 'webp' ? 'image/webp'
                : 'image/jpeg';
 
-    request.files.add(await http.MultipartFile.fromPath(
-      'image',
-      imageFile.path,
-      contentType: MediaType.parse(mime),
-    ));
 
     try {
-      final streamedResponse = await request.send().timeout(ApiConfig.uploadTimeout);
-      final response = await http.Response.fromStream(streamedResponse);
+      Future<http.Response> sendMultipart() async {
+        final request = http.MultipartRequest(
+          'POST',
+          Uri.parse(ApiConfig.uploadGarment),
+        )
+          ..headers['Authorization'] = 'Bearer ${_token ?? ''}'
+          ..fields['name'] = name
+          ..fields['category'] = category
+          ..fields['color'] = color
+          ..fields['season'] = season
+          ..fields['occasion'] = occasion
+          ..fields['purchase_price'] = purchasePrice.toString();
+
+        request.files.add(await http.MultipartFile.fromPath(
+          'image',
+          imageFile.path,
+          contentType: MediaType.parse(mime),
+        ));
+
+        final streamedResponse = await request.send().timeout(ApiConfig.uploadTimeout);
+        return http.Response.fromStream(streamedResponse);
+      }
+
+      final response = await _sendWithAuthRetry(sendMultipart);
       _checkResponse(response);
       return Garment.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
     } on ApiException {
@@ -113,8 +144,9 @@ class ApiService {
       },
     );
 
-    final response = await http.get(uri, headers: _headers)
-        .timeout(ApiConfig.defaultTimeout);
+    final response = await _sendWithAuthRetry(
+      () => http.get(uri, headers: _headers).timeout(ApiConfig.defaultTimeout),
+    );
     _checkResponse(response);
 
     final body = jsonDecode(response.body) as Map<String, dynamic>;
@@ -131,12 +163,14 @@ class ApiService {
   /// Elimina una prenda
   Future<void> deleteGarment(String garmentId) async {
     if (_token == null) throw ApiException('No has iniciado sesión');
-    final response = await http
-        .delete(
-          Uri.parse('${ApiConfig.listGarments}$garmentId'),
-          headers: _headers,
-        )
-        .timeout(ApiConfig.defaultTimeout);
+    final response = await _sendWithAuthRetry(
+      () => http
+          .delete(
+            Uri.parse('${ApiConfig.listGarments}$garmentId'),
+            headers: _headers,
+          )
+          .timeout(ApiConfig.defaultTimeout),
+    );
     _checkResponse(response);
   }
 
@@ -155,8 +189,9 @@ class ApiService {
       queryParameters: {'city': city, 'occasion': occasion},
     );
 
-    final response = await http.get(uri, headers: _headers)
-        .timeout(ApiConfig.defaultTimeout);
+    final response = await _sendWithAuthRetry(
+      () => http.get(uri, headers: _headers).timeout(ApiConfig.defaultTimeout),
+    );
     _checkResponse(response);
     return Outfit.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
   }
@@ -168,8 +203,9 @@ class ApiService {
     final uri = Uri.parse(ApiConfig.outfitHistory)
         .replace(queryParameters: {'limit': limit.toString()});
 
-    final response = await http.get(uri, headers: _headers)
-        .timeout(ApiConfig.defaultTimeout);
+    final response = await _sendWithAuthRetry(
+      () => http.get(uri, headers: _headers).timeout(ApiConfig.defaultTimeout),
+    );
     _checkResponse(response);
 
     return (jsonDecode(response.body) as List<dynamic>)
@@ -189,15 +225,17 @@ class ApiService {
   }) async {
     if (_token == null) throw ApiException('No has iniciado sesión');
 
-    final response = await http.post(
-      Uri.parse(ApiConfig.logUsage),
-      headers: _headers,
-      body: jsonEncode({
-        'garment_id': garmentId,
-        if (outfitId != null) 'outfit_id': outfitId,
-        'occasion': occasion,
-      }),
-    ).timeout(ApiConfig.defaultTimeout);
+    final response = await _sendWithAuthRetry(
+      () => http.post(
+        Uri.parse(ApiConfig.logUsage),
+        headers: _headers,
+        body: jsonEncode({
+          'garment_id': garmentId,
+          if (outfitId != null) 'outfit_id': outfitId,
+          'occasion': occasion,
+        }),
+      ).timeout(ApiConfig.defaultTimeout),
+    );
     _checkResponse(response);
     return jsonDecode(response.body) as Map<String, dynamic>;
   }
@@ -209,11 +247,13 @@ class ApiService {
   }) async {
     if (_token == null) throw ApiException('No has iniciado sesión');
 
-    final response = await http.post(
-      Uri.parse('${ApiConfig.logOutfit}/$outfitId')
-          .replace(queryParameters: {'occasion': occasion}),
-      headers: _headers,
-    ).timeout(ApiConfig.defaultTimeout);
+    final response = await _sendWithAuthRetry(
+      () => http.post(
+        Uri.parse('${ApiConfig.logOutfit}/$outfitId')
+            .replace(queryParameters: {'occasion': occasion}),
+        headers: _headers,
+      ).timeout(ApiConfig.defaultTimeout),
+    );
     _checkResponse(response);
     return jsonDecode(response.body) as Map<String, dynamic>;
   }
