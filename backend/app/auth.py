@@ -54,8 +54,8 @@ async def _decode_supabase_token(token: str) -> dict[str, Any]:
             options={"verify_aud": False, "verify_exp": True},
         )
 
-    # Proyectos nuevos suelen usar RS256 con JWKS públicas.
-    if alg == "RS256":
+    # Proyectos nuevos suelen usar firma asimétrica con JWKS públicas.
+    if alg in {"RS256", "ES256"}:
         jwks = await _get_supabase_jwks()
         kid = header.get("kid")
         key_data = next((k for k in jwks.get("keys", []) if k.get("kid") == kid), None)
@@ -66,7 +66,7 @@ async def _decode_supabase_token(token: str) -> dict[str, Any]:
         return jwt.decode(
             token,
             public_key,
-            algorithms=["RS256"],
+            algorithms=[alg],
             options={"verify_aud": False, "verify_exp": True},
         )
 
