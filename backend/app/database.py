@@ -7,9 +7,18 @@ from sqlalchemy.orm import DeclarativeBase
 from app.config import settings
 
 
+# ── Adaptar DATABASE_URL para asyncpg ─────────────────────────────────────────
+# Render y Supabase proporcionan postgresql:// pero asyncpg necesita postgresql+asyncpg://
+_db_url = settings.DATABASE_URL
+if _db_url.startswith("postgresql://"):
+    _db_url = _db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+elif _db_url.startswith("postgres://"):
+    _db_url = _db_url.replace("postgres://", "postgresql+asyncpg://", 1)
+
+
 # ── Motor async ───────────────────────────────────────────────────────────────
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    _db_url,
     echo=(settings.APP_ENV == "development"),   # muestra SQL en logs de dev
     pool_size=5,
     max_overflow=10,
