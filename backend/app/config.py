@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     # ── App ───────────────────────────────────────────────────────────────────
     APP_ENV: str = "development"
     SUPABASE_STORAGE_BUCKET: str = "garment-images"
+    ENABLE_BG_REMOVAL: bool = False
 
     class Config:
         env_file = ".env"

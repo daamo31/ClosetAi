@@ -21,6 +21,7 @@ from app.schemas.garment import GarmentResponse, GarmentListResponse
 from app.services.image_service import remove_background
 from app.services.storage_service import upload_garment_image, delete_garment_image
 from app.auth import get_current_user
+from app.config import settings
 from app.utils.subscription import check_garment_limit, get_garment_count, can_add_garment, FREE_GARMENT_LIMIT
 
 logger = logging.getLogger(__name__)
@@ -73,11 +74,15 @@ async def upload_garment(
 
     # ── 3. Eliminar fondo ──────────────────────────────────────────────────
     logger.info(f"Procesando imagen '{image.filename}' ({len(image_bytes)/1024:.1f}KB)...")
-    try:
-        processed_image = await remove_background(image_bytes)
-    except RuntimeError as exc:
-        logger.exception("Fallo eliminando fondo para usuario %s", user_id)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc))
+    processed_image = image_bytes
+    if settings.ENABLE_BG_REMOVAL:
+        try:
+            processed_image = await remove_background(image_bytes)
+        except RuntimeError as exc:
+            logger.exception("Fallo eliminando fondo para usuario %s", user_id)
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc))
+    else:
+        logger.info("Eliminación de fondo desactivada (ENABLE_BG_REMOVAL=false)")
 
     # ── 4. Reservar ID y subir imagen ─────────────────────────────────────
     garment_id = uuid.uuid4()
