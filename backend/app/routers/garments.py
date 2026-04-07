@@ -76,6 +76,7 @@ async def upload_garment(
     try:
         processed_image = await remove_background(image_bytes)
     except RuntimeError as exc:
+        logger.exception("Fallo eliminando fondo para usuario %s", user_id)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc))
 
     # ── 4. Reservar ID y subir imagen ─────────────────────────────────────
@@ -85,6 +86,11 @@ async def upload_garment(
             processed_image, str(user_id), str(garment_id)
         )
     except RuntimeError as exc:
+        logger.exception(
+            "Fallo subiendo imagen a Storage para usuario %s, garment_id %s",
+            user_id,
+            garment_id,
+        )
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc))
 
     # ── 5. Guardar en base de datos ───────────────────────────────────────
@@ -102,8 +108,16 @@ async def upload_garment(
         cost_per_wear=Decimal("0.00"),
     )
     db.add(garment)
-    await db.commit()
-    await db.refresh(garment)
+    try:
+        await db.commit()
+        await db.refresh(garment)
+    except Exception:
+        await db.rollback()
+        logger.exception("Fallo guardando prenda en BD para usuario %s", user_id)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="No se pudo guardar la prenda en la base de datos",
+        )
 
     logger.info(f"Prenda creada: '{garment.name}' ({garment.id}) para usuario {user_id}")
     return garment
