@@ -7,9 +7,31 @@ pre-cacheado en el Dockerfile para evitar esperas en Render.com)
 """
 import io
 import logging
+import asyncio
+import time
 from PIL import Image
 
 logger = logging.getLogger(__name__)
+
+_rembg_session = None
+_rembg_lock = asyncio.Lock()
+
+
+async def _get_rembg_session():
+    """Inicializa una sola vez la sesión del modelo para evitar recargas costosas."""
+    global _rembg_session
+    if _rembg_session is not None:
+        return _rembg_session
+
+    async with _rembg_lock:
+        if _rembg_session is None:
+            from rembg import new_session
+
+            # u2netp es más ligero y rápido para entornos pequeños como Render free.
+            _rembg_session = await asyncio.to_thread(new_session, "u2netp")
+            logger.info("Modelo rembg cargado en memoria (u2netp)")
+
+    return _rembg_session
 
 
 async def remove_background(image_bytes: bytes) -> bytes:
@@ -24,12 +46,11 @@ async def remove_background(image_bytes: bytes) -> bytes:
     """
     try:
         # Importación diferida para evitar carga del modelo en el startup
-        from rembg import remove, new_session
+        from rembg import remove
 
-        # Usar sesión persistente para reutilizar el modelo en memoria
-        # (la primera llamada descarga el modelo ~170MB)
-        session = new_session("u2net")
-        output_bytes = remove(image_bytes, session=session)
+        started_at = time.perf_counter()
+        session = await _get_rembg_session()
+        output_bytes = await asyncio.to_thread(remove, image_bytes, session)
 
         # Asegurar que la imagen de salida es un PNG válido con canal alpha
         img = Image.open(io.BytesIO(output_bytes)).convert("RGBA")
@@ -44,7 +65,8 @@ async def remove_background(image_bytes: bytes) -> bytes:
 
         logger.info(
             f"Fondo eliminado. Tamaño original: {len(image_bytes)/1024:.1f}KB "
-            f"→ Resultado: {buffer.getbuffer().nbytes/1024:.1f}KB"
+            f"→ Resultado: {buffer.getbuffer().nbytes/1024:.1f}KB "
+            f"en {time.perf_counter() - started_at:.2f}s"
         )
         return buffer.read()
 
