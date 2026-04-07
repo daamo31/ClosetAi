@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     # ── Supabase ───────────────────────────────────────────────────────────────
     SUPABASE_URL: str
     SUPABASE_KEY: str           # anon/public key (segura para el cliente)
+    SUPABASE_SERVICE_ROLE_KEY: str | None = None
     SUPABASE_JWT_SECRET: str    # JWT secret para verificar tokens de usuario
 
     # ── Base de Datos (conexión directa a PostgreSQL de Supabase) ──────────────

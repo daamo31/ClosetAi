@@ -20,7 +20,8 @@ _supabase: Client | None = None
 def _get_supabase() -> Client:
     global _supabase
     if _supabase is None:
-        _supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
+        api_key = settings.SUPABASE_SERVICE_ROLE_KEY or settings.SUPABASE_KEY
+        _supabase = create_client(settings.SUPABASE_URL, api_key)
     return _supabase
 
 
@@ -64,7 +65,11 @@ async def upload_garment_image(
 
     except Exception as exc:
         logger.error(f"Error subiendo imagen a Supabase Storage: {exc}")
-        raise RuntimeError(f"No se pudo subir la imagen: {exc}")
+        raise RuntimeError(
+            "No se pudo subir la imagen a Storage. "
+            "Verifica SUPABASE_SERVICE_ROLE_KEY o políticas del bucket. "
+            f"Detalle: {exc}"
+        )
 
 
 async def delete_garment_image(user_id: str, garment_id: str) -> None:
