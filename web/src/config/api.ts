@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl  = import.meta.env.VITE_SUPABASE_URL  as string;
 const supabaseKey  = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
-export const API_URL = (import.meta.env.VITE_API_URL as string) ?? '';
+export const API_URL = ((import.meta.env.VITE_API_URL as string) ?? '').replace(/\/$/, '');
 
 if (!supabaseUrl || !supabaseKey) {
   console.error('❌ Faltan variables de entorno VITE_SUPABASE_URL y/o VITE_SUPABASE_ANON_KEY');
