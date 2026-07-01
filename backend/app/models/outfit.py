@@ -55,10 +55,6 @@ class Outfit(Base):
         Text, nullable=True,
         comment="Explicación del estilista IA sobre la elección"
     )
-    ai_style_tip: Mapped[str] = mapped_column(
-        Text, nullable=True,
-        comment="Consejo de estilo adicional del LLM"
-    )
 
     # ── Timestamp ─────────────────────────────────────────────────────────────
     created_at: Mapped[datetime] = mapped_column(

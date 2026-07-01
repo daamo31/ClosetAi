@@ -99,7 +99,6 @@ async def generate_outfit(
         occasion=occasion,
         weather_context=weather,
         ai_reasoning=suggestion.get("reasoning", ""),
-        ai_style_tip=suggestion.get("style_tip", ""),
     )
     db.add(outfit)
     await db.commit()
@@ -155,7 +154,7 @@ async def outfit_history(
                 occasion=outfit.occasion,
                 garments=selected,
                 reasoning=outfit.ai_reasoning or "",
-                style_tip=outfit.ai_style_tip or "",
+                style_tip=outfit.ai_reasoning or "",
                 weather=WeatherInfo(
                     city=weather_data.get("city", ""),
                     country=weather_data.get("country", ""),
