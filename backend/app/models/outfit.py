@@ -7,9 +7,13 @@ from datetime import datetime
 
 from sqlalchemy import String, DateTime, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.dialects.postgresql import UUID, ARRAY, JSON
+from sqlalchemy.dialects.postgresql import UUID, ARRAY, JSON, ENUM
 
 from app.database import Base
+
+# Tipo ENUM que ya existe en la BD (create_type=False → no lo recrea)
+occasion_enum = ENUM('work', 'casual', 'sport', 'formal', 'dinner',
+                     name='occasion_enum', create_type=False)
 
 
 class Outfit(Base):
@@ -40,8 +44,8 @@ class Outfit(Base):
 
     # ── Contexto ──────────────────────────────────────────────────────────────
     occasion: Mapped[str] = mapped_column(
-        String(50), nullable=False,
-        comment="work | casual | sport | formal"
+        occasion_enum, nullable=False,
+        comment="work | casual | sport | formal | dinner"
     )
 
     # Clima en el momento de la generación → { city, temp, feels_like, description }

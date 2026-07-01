@@ -8,9 +8,12 @@ from datetime import datetime
 
 from sqlalchemy import String, DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, ENUM
 
 from app.database import Base
+
+occasion_enum = ENUM('work', 'casual', 'sport', 'formal',
+                     name='occasion_enum', create_type=False)
 
 
 class UsageLog(Base):
@@ -44,7 +47,7 @@ class UsageLog(Base):
         comment="Outfit del que formaba parte (si aplica)"
     )
     occasion: Mapped[str] = mapped_column(
-        String(50), nullable=True,
+        occasion_enum, nullable=True,
         comment="work | casual | sport | formal"
     )
 
