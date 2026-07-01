@@ -31,10 +31,6 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 
-# ── Pre-descargar modelo U2Net de rembg ───────────────────────
-# (se descarga durante el build → no hay espera en el primer request)
-RUN python -c "from rembg import new_session; new_session('u2net'); print('✅ Modelo U2Net descargado')"
-
 # ── Copiar código fuente ───────────────────────────────────────
 COPY . .
 
@@ -43,4 +39,4 @@ EXPOSE 8000
 
 # ── Comando de inicio ─────────────────────────────────────────
 # Render.com inyecta $PORT automáticamente
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+CMD ["sh", "-c", "gunicorn app.main:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:${PORT:-8000} --timeout 240"]
