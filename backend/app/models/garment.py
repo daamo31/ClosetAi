@@ -8,9 +8,17 @@ from decimal import Decimal
 
 from sqlalchemy import String, DateTime, Numeric, Integer, func, Index
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, ENUM
 
 from app.database import Base
+
+# Tipos ENUM que ya existen en la base de datos (create_type=False → no los recrea)
+category_enum = ENUM('top', 'bottom', 'shoes', 'outerwear', 'accessory',
+                     name='category_enum', create_type=False)
+season_enum   = ENUM('spring', 'summer', 'autumn', 'winter', 'all',
+                     name='season_enum', create_type=False)
+occasion_enum = ENUM('work', 'casual', 'sport', 'formal',
+                     name='occasion_enum', create_type=False)
 
 
 class Garment(Base):
@@ -36,15 +44,15 @@ class Garment(Base):
     name: Mapped[str] = mapped_column(String(200), nullable=False)
 
     # Categoría: top | bottom | shoes | outerwear | accessory
-    category: Mapped[str] = mapped_column(String(50), nullable=False)
+    category: Mapped[str] = mapped_column(category_enum, nullable=False)
 
     color: Mapped[str] = mapped_column(String(100), nullable=False)
 
     # Temporada: spring | summer | autumn | winter | all
-    season: Mapped[str] = mapped_column(String(50), nullable=False, default="all")
+    season: Mapped[str] = mapped_column(season_enum, nullable=False, default="all")
 
     # Ocasión: casual | work | sport | formal
-    occasion: Mapped[str] = mapped_column(String(50), nullable=False, default="casual")
+    occasion: Mapped[str] = mapped_column(occasion_enum, nullable=False, default="casual")
 
     # ── Imagen ────────────────────────────────────────────────────────────────
     # URL pública en Supabase Storage (imagen sin fondo, formato PNG)
