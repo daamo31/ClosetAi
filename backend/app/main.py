@@ -68,13 +68,18 @@ app = FastAPI(
 )
 
 # ── CORS ──────────────────────────────────────────────────────────────────────
-# Permite peticiones desde Flutter (en desarrollo: cualquier origen)
+ALLOWED_ORIGINS = [
+    "https://closet-ai-omega.vercel.app",   # Web app en Vercel
+    "http://localhost:5173",                 # Dev local
+    "http://127.0.0.1:5173",               # Dev local (alternativo)
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],        # ⚠️ En producción, cambia a tu dominio real
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=False,   # usamos JWT Bearer, no cookies → False evita conflicto con origins explícitos
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept"],
 )
 
 # ── Routers ───────────────────────────────────────────────────────────────────
