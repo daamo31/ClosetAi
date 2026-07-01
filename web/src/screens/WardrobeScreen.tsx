@@ -22,7 +22,6 @@ export default function WardrobeScreen() {
   const [deleting, setDeleting]     = useState<string | null>(null);
   const [error, setError]           = useState('');
   const [total, setTotal]           = useState(0);
-  const [canAdd, setCanAdd]         = useState(true);
 
   async function load() {
     setLoading(true);
@@ -30,7 +29,6 @@ export default function WardrobeScreen() {
       const data = await listGarments();
       setGarments(data.garments);
       setTotal(data.total);
-      setCanAdd(data.can_add_more);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Error al cargar');
     } finally {
@@ -47,7 +45,6 @@ export default function WardrobeScreen() {
       await deleteGarment(id);
       setGarments(g => g.filter(x => x.id !== id));
       setTotal(t => t - 1);
-      setCanAdd(true);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Error al eliminar');
     } finally {
