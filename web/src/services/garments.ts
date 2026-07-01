@@ -4,7 +4,7 @@ import type { Garment, GarmentListResponse } from '../types';
 
 export async function listGarments(): Promise<GarmentListResponse> {
   const headers = await getAuthHeader();
-  const res = await fetch(`${API_URL}/api/garments`, { headers });
+  const res = await fetch(`${API_URL}/api/garments/`, { headers });
   if (!res.ok) throw new Error((await res.json()).detail ?? 'Error al cargar prendas');
   return res.json();
 }
