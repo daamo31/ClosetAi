@@ -1,0 +1,104 @@
+/* src/index.css — Estilos globales ClosetAI Web */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #0c0c0e;
+  --surface:   #17171a;
+  --card:      #1f1f23;
+  --border:    #2a2a30;
+  --primary:   #7c6cf8;
+  --primary-2: #9f94fb;
+  --accent:    #f87c6c;
+  --text:      #ececf1;
+  --text-2:    #a0a0b0;
+  --text-3:    #606070;
+  --success:   #4ade80;
+  --warning:   #fbbf24;
+  --danger:    #f87171;
+  --radius:    14px;
+  --radius-sm: 8px;
+  --shadow:    0 4px 24px rgba(0,0,0,.45);
+  --nav-h:     68px;
+}
+
+html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+#root { min-height: 100dvh; display: flex; flex-direction: column; }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+input, select, textarea, button { font-family: inherit; font-size: 1rem; outline: none; border: none; }
+button { cursor: pointer; }
+img { max-width: 100%; display: block; }
+
+/* ── Layout ─────────────────────────────────────────────────── */
+.screen {
+  flex: 1;
+  padding: 24px 20px calc(var(--nav-h) + 16px);
+  max-width: 680px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.screen-title { font-size: 1.6rem; font-weight: 700; margin-bottom: 6px; letter-spacing: -.5px; }
+.screen-sub { color: var(--text-2); font-size: .9rem; margin-bottom: 24px; }
+
+/* ── Cards ──────────────────────────────────────────────────── */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+
+/* ── Buttons ────────────────────────────────────────────────── */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 24px; border-radius: var(--radius-sm); font-weight: 600; font-size: .95rem; transition: opacity .15s, transform .1s; user-select: none; }
+.btn:active { transform: scale(.97); }
+.btn:disabled { opacity: .45; pointer-events: none; }
+.btn-primary { background: var(--primary); color: #fff; width: 100%; }
+.btn-primary:hover { opacity: .88; }
+.btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { border-color: var(--primary); }
+.btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+.btn-danger:hover { background: rgba(248,113,113,.1); }
+.btn-sm { padding: 8px 16px; font-size: .85rem; border-radius: 6px; }
+.btn-ghost { background: transparent; color: var(--text-2); padding: 8px 12px; }
+.btn-ghost:hover { color: var(--text); }
+
+/* ── Form ───────────────────────────────────────────────────── */
+.input-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.input-group label { font-size: .85rem; color: var(--text-2); font-weight: 500; }
+.input-field { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); padding: 12px 14px; width: 100%; transition: border-color .2s; }
+.input-field:focus { border-color: var(--primary); }
+select.input-field { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a0a0b0' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; cursor: pointer; }
+
+/* ── Alerts ─────────────────────────────────────────────────── */
+.error-msg { color: var(--danger); font-size: .85rem; padding: 10px 14px; background: rgba(248,113,113,.08); border-radius: var(--radius-sm); border: 1px solid rgba(248,113,113,.25); margin-bottom: 12px; }
+.success-msg { color: var(--success); font-size: .85rem; padding: 10px 14px; background: rgba(74,222,128,.08); border-radius: var(--radius-sm); border: 1px solid rgba(74,222,128,.25); margin-bottom: 12px; }
+
+/* ── Badges ─────────────────────────────────────────────────── */
+.badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; font-size: .75rem; font-weight: 600; letter-spacing: .3px; }
+.badge-purple { background: rgba(124,108,248,.15); color: var(--primary-2); }
+.badge-blue   { background: rgba(96,165,250,.12);  color: #93c5fd; }
+.badge-green  { background: rgba(74,222,128,.12);  color: #86efac; }
+.badge-yellow { background: rgba(251,191,36,.12);  color: #fde68a; }
+.badge-red    { background: rgba(248,113,113,.12); color: #fca5a5; }
+
+/* ── Loading ────────────────────────────────────────────────── */
+.spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin .7s linear infinite; margin: 0 auto; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-center { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 40px; color: var(--text-2); }
+
+/* ── Grid ───────────────────────────────────────────────────── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+
+/* ── Divider ────────────────────────────────────────────────── */
+.divider { display: flex; align-items: center; gap: 12px; color: var(--text-3); font-size: .8rem; margin: 20px 0; }
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }

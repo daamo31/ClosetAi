@@ -1,0 +1,100 @@
+/* src/screens/OutfitScreen.module.css */
+.form { margin-bottom: 20px; }
+
+.locationRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.gpsLabel {
+  font-size: .85rem;
+  color: var(--primary-2);
+}
+
+.result { display: flex; flex-direction: column; gap: 16px; }
+
+/* Clima */
+.weather { display: flex; flex-direction: column; gap: 10px; }
+
+.weatherMain {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.weatherIcon { font-size: 2rem; }
+
+.weatherCity { font-weight: 700; font-size: 1rem; }
+
+.weatherDesc { color: var(--text-2); font-size: .85rem; text-transform: capitalize; }
+
+.weatherTemp {
+  margin-left: auto;
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--primary-2);
+}
+
+.weatherMeta {
+  display: flex;
+  gap: 16px;
+  font-size: .8rem;
+  color: var(--text-3);
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+}
+
+/* Prendas */
+.sectionTitle {
+  font-size: .85rem;
+  font-weight: 700;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+}
+
+.garmentGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+}
+
+.garmentCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px !important;
+  text-align: center;
+}
+
+.garmentImg {
+  width: 80px;
+  height: 80px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+}
+
+.garmentImg img { width: 100%; height: 100%; object-fit: cover; }
+
+.garmentName {
+  font-size: .82rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+/* Razonamiento */
+.reasoning { background: rgba(124,108,248,.06) !important; border-color: rgba(124,108,248,.25) !important; }
+
+.reasoningTitle { font-weight: 700; font-size: .9rem; margin-bottom: 8px; color: var(--primary-2); }
+
+.reasoningText { font-size: .9rem; color: var(--text-2); line-height: 1.6; }
