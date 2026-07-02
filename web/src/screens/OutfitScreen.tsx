@@ -3,7 +3,7 @@ import { useRef, useState } from 'react';
 import { generateOutfit } from '../services/outfits';
 import { logUsage } from '../services/garments';
 import { virtualTryOn } from '../services/tryon';
-import type { Garment, Outfit } from '../types';
+import type { Outfit } from '../types';
 import styles from './OutfitScreen.module.css';
 
 const OCCASIONS = [
@@ -31,12 +31,6 @@ export default function OutfitScreen() {
   const [tryonLoading, setTryonLoading]   = useState(false);
   const [tryonError, setTryonError]       = useState('');
 
-  function getBestGarment(garments: Garment[]): Garment | null {
-    return garments.find(g => g.category === 'top')
-      || garments.find(g => g.category === 'outerwear')
-      || garments.find(g => g.category === 'bottom')
-      || garments[0] || null;
-  }
 
   async function handleTryOn(file: File) {
     if (!outfit) return;
