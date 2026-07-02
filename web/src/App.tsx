@@ -10,6 +10,7 @@ import DashboardScreen   from './screens/DashboardScreen';
 import WardrobeScreen    from './screens/WardrobeScreen';
 import UploadScreen      from './screens/UploadScreen';
 import OutfitScreen      from './screens/OutfitScreen';
+import TryOnScreen       from './screens/TryOnScreen';
 
 export default function App() {
   const [session, setSession] = useState<Session | null | undefined>(undefined);
@@ -45,6 +46,7 @@ export default function App() {
       {screen === 'wardrobe'  && <WardrobeScreen />}
       {screen === 'upload'    && <UploadScreen onSuccess={() => setScreen('wardrobe')} />}
       {screen === 'outfit'    && <OutfitScreen />}
+      {screen === 'tryon'     && <TryOnScreen />}
       <NavBar current={screen} onChange={setScreen} />
     </>
   );

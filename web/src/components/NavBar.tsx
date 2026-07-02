@@ -12,6 +12,7 @@ const ITEMS: { id: Screen; icon: string; label: string }[] = [
   { id: 'wardrobe',  icon: '👕', label: 'Armario' },
   { id: 'upload',    icon: '➕', label: 'Añadir' },
   { id: 'outfit',    icon: '✨', label: 'Outfit' },
+  { id: 'tryon',     icon: '👗', label: 'Probador' },
 ];
 
 export default function NavBar({ current, onChange }: Props) {

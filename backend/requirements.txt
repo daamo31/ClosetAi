@@ -38,3 +38,6 @@ gunicorn==22.0.0             # servidor WSGI/ASGI para producción (Render)
 
 # ── Utils ─────────────────────────────────────────────────────
 python-dotenv==1.0.1
+
+# ── Replicate (Virtual Try-On) ───────────────────────────────
+replicate==1.0.4

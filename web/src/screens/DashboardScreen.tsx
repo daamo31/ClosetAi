@@ -1,7 +1,8 @@
 // src/screens/DashboardScreen.tsx
 import { useEffect, useState } from 'react';
-import { supabase } from '../config/api';
+import { supabase, API_URL } from '../config/api';
 import { listGarments } from '../services/garments';
+import { getAuthHeader } from '../config/api';
 import type { GarmentListResponse, Screen } from '../types';
 import styles from './DashboardScreen.module.css';
 
@@ -9,9 +10,15 @@ interface Props {
   onNavigate: (s: Screen) => void;
 }
 
+interface Weather {
+  city: string; temp: number; feels_like: number;
+  description: string; humidity: number; icon: string;
+}
+
 export default function DashboardScreen({ onNavigate }: Props) {
   const [userData, setUserData]   = useState<{ email: string } | null>(null);
   const [wardrobe, setWardrobe]   = useState<GarmentListResponse | null>(null);
+  const [weather, setWeather]     = useState<Weather | null>(null);
   const [loading, setLoading]     = useState(true);
 
   useEffect(() => {
@@ -21,7 +28,21 @@ export default function DashboardScreen({ onNavigate }: Props) {
       try {
         const wd = await listGarments();
         setWardrobe(wd);
-      } catch { /* armario vacío o error de red, se muestra el estado vacío */ }
+      } catch { /* armario vacío */ }
+      // Clima — usamos geolocalización si está disponible, si no Madrid
+      try {
+        const headers = await getAuthHeader();
+        const pos = await new Promise<GeolocationPosition | null>(res =>
+          navigator.geolocation
+            ? navigator.geolocation.getCurrentPosition(p => res(p), () => res(null), { timeout: 4000 })
+            : res(null)
+        );
+        const query = pos
+          ? `lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`
+          : 'city=Madrid';
+        const w = await fetch(`${API_URL}/api/weather?${query}`, { headers });
+        if (w.ok) setWeather(await w.json());
+      } catch { /* sin clima */ }
       setLoading(false);
     })();
   }, []);
@@ -52,6 +73,27 @@ export default function DashboardScreen({ onNavigate }: Props) {
         <div className="loading-center"><div className="spinner" /><span>Cargando...</span></div>
       ) : (
         <>
+          {/* Clima */}
+          {weather && (
+            <div className={`card ${styles.weatherCard}`} onClick={() => onNavigate('outfit')} style={{ cursor: 'pointer' }}>
+              <div className={styles.weatherRow}>
+                <span className={styles.weatherIcon}>
+                  {weather.icon ? <img src={`https://openweathermap.org/img/wn/${weather.icon}@2x.png`} alt="" style={{ width: 48, height: 48 }} /> : '🌤️'}
+                </span>
+                <div className={styles.weatherInfo}>
+                  <p className={styles.weatherCity}>{weather.city}</p>
+                  <p className={styles.weatherDesc}>{weather.description}</p>
+                </div>
+                <span className={styles.weatherTemp}>{Math.round(weather.temp)}°C</span>
+              </div>
+              <div className={styles.weatherMeta}>
+                <span>💧 {weather.humidity}%</span>
+                <span>Sensación {Math.round(weather.feels_like)}°C</span>
+                <span className={styles.weatherHint}>Toca para generar outfit →</span>
+              </div>
+            </div>
+          )}
+
           {/* Stats */}
           <div className={`card ${styles.statsCard}`}>
             <div className={styles.stat}>

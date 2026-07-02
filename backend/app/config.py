@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     # ── OpenWeatherMap ─────────────────────────────────────────────────────────
     OPENWEATHER_API_KEY: str
 
+    # ── Replicate (Virtual Try-On) ──────────────────────────────────────────
+    REPLICATE_API_TOKEN: str | None = None
+
     # ── App ───────────────────────────────────────────────────────────────────
     APP_ENV: str = "development"
     SUPABASE_STORAGE_BUCKET: str = "garment-images"

@@ -40,4 +40,4 @@ export interface Outfit {
   created_at: string;
 }
 
-export type Screen = 'dashboard' | 'wardrobe' | 'upload' | 'outfit';
+export type Screen = 'dashboard' | 'wardrobe' | 'upload' | 'outfit' | 'tryon';

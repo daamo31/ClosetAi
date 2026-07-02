@@ -10,7 +10,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
 from app.database import engine, Base
-from app.routers import garments, outfits, usage
+from app.routers import garments, outfits, usage, tryon
+from app.services.weather_service import get_weather
 
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -86,6 +87,7 @@ app.add_middleware(
 app.include_router(garments.router)
 app.include_router(outfits.router)
 app.include_router(usage.router)
+app.include_router(tryon.router)
 
 
 # ── Endpoints de utilidad ─────────────────────────────────────────────────────
@@ -106,3 +108,9 @@ async def health_check():
     También sirve para mantener el servidor despierto (keep-alive).
     """
     return {"status": "ok", "service": "ClosetAI"}
+
+
+@app.get("/api/weather", tags=["🌤️ Clima"])
+async def weather(city: str = "Madrid", lat: float = None, lon: float = None):
+    """Devuelve el clima actual de una ciudad o coordenadas."""
+    return await get_weather(city=city if not lat else None, lat=lat, lon=lon)

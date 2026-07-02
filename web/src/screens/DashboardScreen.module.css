@@ -1,4 +1,20 @@
 /* src/screens/DashboardScreen.module.css */
+
+/* ── Clima ──────────────────────────────────────────────────── */
+.weatherCard {
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, rgba(124,108,248,.12), rgba(96,165,250,.08)) !important;
+  border-color: rgba(124,108,248,.3) !important;
+}
+.weatherRow { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.weatherIcon { flex-shrink: 0; font-size: 2rem; }
+.weatherInfo { flex: 1; }
+.weatherCity { font-weight: 700; font-size: .95rem; }
+.weatherDesc { color: var(--text-2); font-size: .82rem; text-transform: capitalize; }
+.weatherTemp { font-size: 2.2rem; font-weight: 800; color: var(--primary-2); }
+.weatherMeta { display: flex; gap: 12px; font-size: .78rem; color: var(--text-3); flex-wrap: wrap; }
+.weatherHint { margin-left: auto; color: var(--primary-2); font-weight: 500; }
+
 .header {
   display: flex;
   align-items: flex-start;
