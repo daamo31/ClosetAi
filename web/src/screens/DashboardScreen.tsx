@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { supabase, API_URL } from '../config/api';
 import { listGarments } from '../services/garments';
 import { getAuthHeader } from '../config/api';
-import type { GarmentListResponse, Screen } from '../types';
+import type { GarmentListResponse, Garment, Screen } from '../types';
 import styles from './DashboardScreen.module.css';
 
 interface Props {
@@ -15,11 +15,18 @@ interface Weather {
   description: string; humidity: number; icon: string;
 }
 
+interface TodayOutfit {
+  garments: Garment[];
+  occasion: string;
+  reasoning: string;
+}
+
 export default function DashboardScreen({ onNavigate }: Props) {
-  const [userData, setUserData]   = useState<{ email: string } | null>(null);
-  const [wardrobe, setWardrobe]   = useState<GarmentListResponse | null>(null);
-  const [weather, setWeather]     = useState<Weather | null>(null);
-  const [loading, setLoading]     = useState(true);
+  const [userData, setUserData]     = useState<{ email: string } | null>(null);
+  const [wardrobe, setWardrobe]     = useState<GarmentListResponse | null>(null);
+  const [weather, setWeather]       = useState<Weather | null>(null);
+  const [todayOutfit, setTodayOutfit] = useState<TodayOutfit | null>(null);
+  const [loading, setLoading]       = useState(true);
 
   useEffect(() => {
     (async () => {
@@ -43,6 +50,10 @@ export default function DashboardScreen({ onNavigate }: Props) {
         const w = await fetch(`${API_URL}/api/weather?${query}`, { headers });
         if (w.ok) setWeather(await w.json());
       } catch { /* sin clima */ }
+      // Outfit del día desde localStorage
+      const today = new Date().toISOString().split('T')[0];
+      const saved = localStorage.getItem(`closetai_outfit_${today}`);
+      if (saved) { try { setTodayOutfit(JSON.parse(saved)); } catch { /* ignore */ } }
       setLoading(false);
     })();
   }, []);
@@ -119,6 +130,26 @@ export default function DashboardScreen({ onNavigate }: Props) {
           <p className={styles.progressLabel}>
             {canAdd ? `Puedes añadir ${limit - total} prendas más` : '⚠️ Has alcanzado el límite del plan gratuito'}
           </p>
+
+          {/* Outfit del día */}
+          {todayOutfit && (
+            <div className={`card ${styles.todayCard}`}>
+              <p className={styles.todayTitle}>✅ Tu outfit de hoy</p>
+              <div className={styles.todayGarments}>
+                {todayOutfit.garments.map(g => (
+                  <div key={g.id} className={styles.todayGarment}>
+                    {g.image_url
+                      ? <img src={g.image_url} alt={g.name} />
+                      : <span>👕</span>}
+                    <p>{g.name}</p>
+                  </div>
+                ))}
+              </div>
+              <p className={styles.todayOccasion}>
+                {todayOutfit.occasion} · <span style={{ color: 'var(--text-3)' }}>{todayOutfit.reasoning?.slice(0, 80)}…</span>
+              </p>
+            </div>
+          )}
 
           {/* Acciones rápidas */}
           <h2 className={styles.sectionTitle}>Acciones rápidas</h2>

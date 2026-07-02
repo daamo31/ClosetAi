@@ -98,3 +98,9 @@
 .reasoningTitle { font-weight: 700; font-size: .9rem; margin-bottom: 8px; color: var(--primary-2); }
 
 .reasoningText { font-size: .9rem; color: var(--text-2); line-height: 1.6; }
+
+/* Try-on inline */
+.tryonCard { display: flex; flex-direction: column; gap: 8px; }
+.tryonTitle { font-weight: 700; font-size: .95rem; }
+.tryonSub { font-size: .8rem; color: var(--text-3); }
+.tryonResult img { width: 100%; border-radius: 10px; border: 1px solid var(--border); max-height: 480px; object-fit: contain; }

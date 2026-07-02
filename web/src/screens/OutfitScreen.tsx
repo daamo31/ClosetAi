@@ -1,8 +1,9 @@
 // src/screens/OutfitScreen.tsx
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { generateOutfit } from '../services/outfits';
 import { logUsage } from '../services/garments';
-import type { Outfit } from '../types';
+import { virtualTryOn } from '../services/tryon';
+import type { Garment, Outfit } from '../types';
 import styles from './OutfitScreen.module.css';
 
 const OCCASIONS = [
@@ -22,6 +23,36 @@ export default function OutfitScreen() {
   const [error, setError]         = useState('');
   const [confirmed, setConfirmed] = useState(false);
   const [confirming, setConfirming] = useState(false);
+
+  // ── Try-on inline ──────────────────────────────────────────────
+  const tryonRef                          = useRef<HTMLInputElement>(null);
+  const [tryonFile, setTryonFile]         = useState<File | null>(null);
+  const [tryonResult, setTryonResult]     = useState<string | null>(null);
+  const [tryonLoading, setTryonLoading]   = useState(false);
+  const [tryonError, setTryonError]       = useState('');
+
+  function getBestGarment(garments: Garment[]): Garment | null {
+    return garments.find(g => g.category === 'top')
+      || garments.find(g => g.category === 'outerwear')
+      || garments.find(g => g.category === 'bottom')
+      || garments[0] || null;
+  }
+
+  async function handleTryOn(file: File) {
+    if (!outfit) return;
+    const withImage = outfit.garments.filter(g => g.image_url);
+    if (!withImage.length) { setTryonError('Ninguna prenda tiene imagen para el probador.'); return; }
+    setTryonLoading(true);
+    setTryonError('');
+    try {
+      const res = await virtualTryOn(file, withImage.map(g => g.id));
+      setTryonResult(res.result_url);
+    } catch (e: unknown) {
+      setTryonError(e instanceof Error ? e.message : 'Error en el probador');
+    } finally {
+      setTryonLoading(false);
+    }
+  }
 
   async function handleGenerate(e: React.FormEvent) {
     e.preventDefault();
@@ -62,6 +93,13 @@ export default function OutfitScreen() {
     setConfirming(true);
     try {
       await Promise.all(outfit.garments.map(g => logUsage(g.id)));
+      // Guardar outfit del día en localStorage
+      const today = new Date().toISOString().split('T')[0];
+      localStorage.setItem(`closetai_outfit_${today}`, JSON.stringify({
+        garments: outfit.garments,
+        occasion: outfit.occasion,
+        reasoning: outfit.ai_reasoning,
+      }));
       setConfirmed(true);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Error al confirmar');
@@ -165,6 +203,46 @@ export default function OutfitScreen() {
               <p className={styles.reasoningText}>{outfit.ai_reasoning}</p>
             </div>
           )}
+
+          {/* ── Try-on inline ─────────────────────────────────── */}
+          <div className={`card ${styles.tryonCard}`}>
+            <p className={styles.tryonTitle}>👗 Probarme este outfit</p>
+            <p className={styles.tryonSub}>Sube tu foto y la IA te viste con la prenda principal (~45s)</p>
+            <input
+              ref={tryonRef}
+              type="file" accept="image/*" capture="user"
+              style={{ display: 'none' }}
+              onChange={e => {
+                const f = e.target.files?.[0];
+                if (f) { setTryonFile(f); setTryonResult(null); handleTryOn(f); }
+              }}
+            />
+            {tryonError && <p className="error-msg">{tryonError}</p>}
+            {tryonLoading && (
+              <div className="loading-center" style={{ padding: 20 }}>
+                <div className="spinner" />
+                <span>Generando prueba virtual...</span>
+              </div>
+            )}
+            {tryonResult && (
+              <div className={styles.tryonResult}>
+                <img src={tryonResult} alt="Try-on" />
+                <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                  <a href={tryonResult} download="tryon.png" className="btn btn-secondary btn-sm">⬇️ Descargar</a>
+                  <button className="btn btn-ghost btn-sm" onClick={() => { setTryonResult(null); setTryonFile(null); if (tryonRef.current) tryonRef.current.value = ''; }}>🔄 Repetir</button>
+                </div>
+              </div>
+            )}
+            {!tryonLoading && !tryonResult && (
+              <button
+                className="btn btn-secondary btn-sm"
+                style={{ marginTop: 4 }}
+                onClick={() => tryonRef.current?.click()}
+              >
+                📷 {tryonFile ? 'Cambiar foto' : 'Subir mi foto'}
+              </button>
+            )}
+          </div>
 
           {/* Confirmar uso */}
           {!confirmed ? (

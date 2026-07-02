@@ -3,12 +3,12 @@ import { API_URL, getAuthHeader } from '../config/api';
 
 export async function virtualTryOn(
   personImage: File,
-  garmentId: string,
-): Promise<{ result_url: string; garment: string }> {
+  garmentIds: string[],   // array de UUIDs — outfit completo
+): Promise<{ result_url: string; garments: string[]; total_steps: number }> {
   const headers = await getAuthHeader();
   const form = new FormData();
   form.append('person_image', personImage);
-  form.append('garment_id', garmentId);
+  form.append('garment_ids', JSON.stringify(garmentIds));
 
   const res = await fetch(`${API_URL}/api/tryon`, {
     method: 'POST',

@@ -120,3 +120,13 @@
 }
 
 .tipIcon { font-size: 1.2rem; flex-shrink: 0; margin-top: 1px; }
+
+/* Outfit del día */
+.todayCard { margin-bottom: 20px; border-color: rgba(74,222,128,.3) !important; background: rgba(74,222,128,.04) !important; }
+.todayTitle { font-weight: 700; font-size: .9rem; color: var(--success); margin-bottom: 10px; }
+.todayGarments { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 8px; }
+.todayGarment { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; width: 70px; }
+.todayGarment img { width: 70px; height: 70px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); }
+.todayGarment span { font-size: 2rem; }
+.todayGarment p { font-size: .68rem; color: var(--text-2); text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
+.todayOccasion { font-size: .8rem; font-weight: 600; color: var(--text-2); }

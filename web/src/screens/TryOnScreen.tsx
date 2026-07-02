@@ -48,7 +48,7 @@ export default function TryOnScreen() {
     setError('');
     setResultUrl(null);
     try {
-      const res = await virtualTryOn(personFile, selected.id);
+      const res = await virtualTryOn(personFile, [selected.id]);
       setResultUrl(res.result_url);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Error en el probador');
@@ -139,8 +139,7 @@ export default function TryOnScreen() {
       {/* Resultado */}
       {resultUrl && (
         <div className={styles.result}>
-          <p className={styles.resultTitle}>✨ Resultado — {selected?.name}</p>
-          <img src={resultUrl} alt="Try-on result" className={styles.resultImg} />
+          <p className={styles.resultTitle}>✨ Resultado — {selected?.name}</p>          <img src={resultUrl} alt="Try-on result" className={styles.resultImg} />
           <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
             <a href={resultUrl} download="tryon.png" className="btn btn-secondary btn-sm">
               ⬇️ Descargar
